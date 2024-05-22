@@ -33,11 +33,11 @@ if [ $DGX_REPO == true ]; then
 		curl -fkSL https://repo.download.nvidia.com/baseos/ubuntu/$UBUNTU_CODENAME/dgx-repo-files.tgz | tar xzf - -C /
 	elif [[ $UBUNTU_CODENAME = bionic ]]; then
 		curl -fkSLO https://repo.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo/dgx-repo_1.0-5_amd64.deb
-		# curl -fkSLO https://repo.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-bionic-repos/dgx-bionic-r418+cuda10.1-repo_1.0-8_amd64.deb
+		curl -fkSLO https://repo.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-bionic-repos/dgx-bionic-r418+cuda10.1-repo_1.0-8_amd64.deb
 		curl -fkSLO https://repo.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-bionic-repos/dgx-bionic-r450+cuda11.0-repo_1.0-8_amd64.deb
 		curl -fkSLO https://repo.download.nvidia.com/dgx/repos/bionic/pool/multiverse/n/nvidia-repo-keys/nvidia-repo-keys_22.04-1_all.deb
-		dpkg -i dgx-repo_1.0-5_amd64.deb dgx-bionic-r450+cuda11.0-repo_1.0-8_amd64.deb nvidia-repo-keys_22.04-1_all.deb # dgx-bionic-r418+cuda10.1-repo_1.0-8_amd64.deb
-		rm dgx-repo_1.0-5_amd64.deb dgx-bionic-r450+cuda11.0-repo_1.0-8_amd64.deb nvidia-repo-keys_22.04-1_all.deb # dgx-bionic-r418+cuda10.1-repo_1.0-8_amd64.deb
+		dpkg -i dgx-repo_1.0-5_amd64.deb dgx-bionic-r418+cuda10.1-repo_1.0-8_amd64.deb dgx-bionic-r450+cuda11.0-repo_1.0-8_amd64.deb nvidia-repo-keys_22.04-1_all.deb
+		rm dgx-repo_1.0-5_amd64.deb dgx-bionic-r418+cuda10.1-repo_1.0-8_amd64.deb dgx-bionic-r450+cuda11.0-repo_1.0-8_amd64.deb nvidia-repo-keys_22.04-1_all.deb
 	else
 		if [[ $UBUNTU_CODENAME = xenial ]]; then
 			curl -fkSLO https://repo.download.nvidia.com/dgx/repos/pool/multiverse/d/dgx-repo/dgx-repo_1.0-1_amd64.deb
@@ -101,3 +101,4 @@ fi
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends $reqs
 service docker restart
+systemctl enable docker
