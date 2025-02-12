@@ -8,7 +8,7 @@ else
 fi
 
 DGX_REPO=false
-NO_INSTALL_DOCKER=false
+NO_NVIDIA_DOCKER=false
 
 for arg in $*; do
 	case $arg in
@@ -16,8 +16,8 @@ for arg in $*; do
 			DGX_REPO=true
 			shift
 			;;
-		--no-install-docker)
-			NO_INSTALL_DOCKER=true
+		--no-nvidia-docker)
+			NO_NVIDIA_DOCKER=true
 			shift
 			;;
 	esac
@@ -29,7 +29,7 @@ if ! command -v curl > /dev/null; then
 fi
 
 if [ $DGX_REPO == true ]; then	
-	if [[ $UBUNTU_CODENAME = jammy ]] || [[ $UBUNTU_CODENAME = focal ]]; then
+	if [[ $UBUNTU_CODENAME = noble ]] || [[ $UBUNTU_CODENAME = jammy ]] || [[ $UBUNTU_CODENAME = focal ]]; then
 		curl -fkSL https://repo.download.nvidia.com/baseos/ubuntu/$UBUNTU_CODENAME/dgx-repo-files.tgz | tar xzf - -C /
 	elif [[ $UBUNTU_CODENAME = bionic ]]; then
 		curl -fkSLO https://repo.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo/dgx-repo_1.0-5_amd64.deb
@@ -57,10 +57,6 @@ if [ $DGX_REPO == true ]; then
 	fi
 fi
 
-if [ $NO_INSTALL_DOCKER == true ]; then
-	exit
-fi
-
 if [[ $VERSION_ID = 14.04 ]]; then
 	reqs="docker.io"
 else
@@ -69,10 +65,12 @@ else
 	if cat /etc/apt/sources.list.d/dgx.list > /dev/null; then
 		reqs="$reqs dgx-docker-cleanup dgx-docker-options"
 		
-		if [[ $UBUNTU_CODENAME = jammy ]] || [[ $UBUNTU_CODENAME = focal ]]; then
-			reqs="$reqs nvidia-container-toolkit"
-		elif [[ $UBUNTU_CODENAME = bionic ]] || [[ $UBUNTU_CODENAME = xenial ]]; then
-			reqs="$reqs nvidia-docker2"
+		if [ $NO_NVIDIA_DOCKER == false ]; then
+			if [[ $UBUNTU_CODENAME = noble ]] || [[ $UBUNTU_CODENAME = jammy ]] || [[ $UBUNTU_CODENAME = focal ]]; then
+				reqs="$reqs nvidia-container-toolkit"
+			elif [[ $UBUNTU_CODENAME = bionic ]] || [[ $UBUNTU_CODENAME = xenial ]]; then
+				reqs="$reqs nvidia-docker2"
+			fi
 		fi
 	else
 		pre_reqs="apt-transport-https ca-certificates"
@@ -80,10 +78,10 @@ else
 		if ! command -v gnupg > /dev/null; then
 			pre_reqs="$pre_reqs gnupg"
 		fi
-		
-		if [[ $UBUNTU_CODENAME = jammy ]] || [[ $UBUNTU_CODENAME = focal ]]; then
-			reqs="$reqs docker-buildx-plugin docker-compose-plugin nvidia-container-toolkit"
-		else
+		if [[ $UBUNTU_CODENAME = noble ]] || [[ $UBUNTU_CODENAME = jammy ]] || [[ $UBUNTU_CODENAME = focal ]]; then
+			reqs="$reqs docker-buildx-plugin docker-compose-plugin"
+		fi
+		if [ $NO_NVIDIA_DOCKER == false ]; then
 			reqs="$reqs nvidia-container-toolkit"
 		fi
 	
@@ -101,4 +99,3 @@ fi
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends $reqs
 service docker restart
-systemctl enable docker
